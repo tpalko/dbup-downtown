@@ -1,0 +1,30 @@
+{
+  "name": "dbup-downtown",
+  "version": "1.0.0",
+  "description": "Lightweight database migration command-line tool",
+  "main": "migrate.js",
+  "scripts": {
+    "test": "node migrate.js test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tpalko/dbup-downtown.git"
+  },
+  "keywords": [
+    "database",
+    "migration",
+    "command",
+    "line"
+  ],
+  "author": "Tim Palko <tim@palkosoftware.com> (https://www.palkosoftware.com/)",
+  "license": "GPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/tpalko/dbup-downtown/issues"
+  },
+  "homepage": "https://github.com/tpalko/dbup-downtown#readme",
+  "devDependencies": {
+    "@types/node": "^16.7.1",
+    "sqlite3": "^5.0.2",
+    "typescript": "^4.3.5"
+  }
+}
