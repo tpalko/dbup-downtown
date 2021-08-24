@@ -96,16 +96,17 @@ The following are command templates for common operations in Sqlite3.
 
 **Add column**
 
-**up**: `alter table orig add column;`
-**down**: `BEGIN; alter table orig rename to temp; create table orig (leave, out, removed, column); insert into orig(leave, out, removed, column) select (leave, out, removed, column) from temp; END TRANSACTION;`
+* up: `alter table orig add column;`
+* down: `BEGIN; alter table orig rename to temp; create table orig (leave, out, removed, column); insert into orig(leave, out, removed, column) select (leave, out, removed, column) from temp; END TRANSACTION;`
+
 **Remove column**
 
-**up**:down: reverse of `add column`
+* up/down: reverse of `add column`
 
 **Rename column**
 
-**up**: `BEGIN; alter table orig rename to temp; create table orig (a2, b2); insert (a2, b2) into origin select (a, b) from temp; END TRANSACTION;`
-**down**: reverse values from `up`
+* up: `BEGIN; alter table orig rename to temp; create table orig (a2, b2); insert (a2, b2) into origin select (a, b) from temp; END TRANSACTION;`
+* down: reverse values from `up`
 
 ## Future development 
 
