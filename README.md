@@ -1,6 +1,11 @@
 # dbup-downtown
 
-Lightweight database migration command-line tool
+Lightweight database migration command-line tool.
+
+## Hold your horses
+
+Currently, this project only supports Sqlite3 database files, however the actual migration code doesn't care, and if you'd like 
+to contribute and write a MySQL or PostgreSQL provider, we are open for business.
 
 ## Quick start
 
@@ -53,15 +58,15 @@ made about direction from the previous token remain in effect.
 
 | command | result |
 |---|---|
-| migrate | migrate up 1 |
-| migrate up | migrate up 1 |
-| migrate 2 | migrate up 2 |
-| migrate -1 | migrate down 1 |
-| migrate down | migrate down 1 |
-| migrate up 3 | migrate up 3 |
-| migrate down -1 | migrate down 1 |
-| migrate 1 -1 | nonsensical, but will attempt migrate up -1 |
-| migrate 1 down | error |
+| `migrate` | migrate up 1 |
+| `migrate up` | migrate up 1 |
+| `migrate 2` | migrate up 2 |
+| `migrate -1` | migrate down 1 |
+| `migrate down` | migrate down 1 |
+| `migrate up 3`| migrate up 3 |
+| `migrate down -1` | migrate down 1 |
+| `migrate 1 -1` | nonsensical, but will attempt migrate up -1 |
+| `migrate 1 down` | error |
 
 ## Migration files
 
@@ -91,17 +96,16 @@ The following are command templates for common operations in Sqlite3.
 
 **Add column**
 
-* up: alter table orig add column;
-* down: BEGIN; alter table orig rename to temp; create table orig (leave, out, removed, column); insert into orig(leave, out, removed, column) select (leave, out, removed, column) from temp; END TRANSACTION;
-
+**up**: `alter table orig add column;`
+**down**: `BEGIN; alter table orig rename to temp; create table orig (leave, out, removed, column); insert into orig(leave, out, removed, column) select (leave, out, removed, column) from temp; END TRANSACTION;`
 **Remove column**
 
-* up/down: reverse of `add column`
+**up**:down: reverse of `add column`
 
 **Rename column**
 
-* up: BEGIN; alter table orig rename to temp; create table orig (a2, b2); insert (a2, b2) into origin select (a, b) from temp; END TRANSACTION;
-* down: reverse values from `up`
+**up**: `BEGIN; alter table orig rename to temp; create table orig (a2, b2); insert (a2, b2) into origin select (a, b) from temp; END TRANSACTION;`
+**down**: reverse values from `up`
 
 ## Future development 
 
