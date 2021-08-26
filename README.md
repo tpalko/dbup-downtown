@@ -48,29 +48,29 @@ To perform migrations, the first token after `migrate.js` is always `migrate`.
 If no other tokens, the assumption is `migrate up by one`.
 
 The next token after `migrate` can be `up` or `down` to control the direction, 
-_or any integer_ to control the number of migarations performed in that direction. 
+_or any integer_ to control the number of migrations performed. 
 If a direction, the number of migrations remains assumed at one. If an integer, 
 the direction remains assumed at up.
 
-If yet another token is included, it must be an integer and it will override 
+If yet another token is included, it _must be an integer_ and it will override 
 whatever `count` determination was made from the previous token. Any determinations
 made about direction from the previous token remain in effect.
 
 | command | result |
 |---|---|
-| `migrate` | migrate up 1 |
-| `migrate up` | migrate up 1 |
-| `migrate 2` | migrate up 2 |
-| `migrate -1` | migrate down 1 |
-| `migrate down` | migrate down 1 |
-| `migrate up 3`| migrate up 3 |
-| `migrate down -1` | migrate down 1 |
-| `migrate 1 -1` | nonsensical, but will attempt migrate up -1 |
-| `migrate 1 down` | error |
+| `migrate` | migrate up by one |
+| `migrate up` | migrate up by one |
+| `migrate 2` | migrate up by two |
+| `migrate -1` | migrate down by one |
+| `migrate down` | migrate down by one |
+| `migrate up 3`| migrate up by three |
+| `migrate down -1` | migrate down by one |
+| `migrate 1 -1` | nonsensical, but will attempt migrate "up" by "minus one" |
+| `migrate 1 down` | error (parsing non-numerical string as integer) |
 
 ## Migration files
 
-A migration file must be named `YYYYMMDDHHMM.json` and be placed within MIGRATIONS_FOLDER.
+A migration file must follow the timestamp naming pattern `YYYYMMDDHHMM.json` and be placed within MIGRATIONS_FOLDER.
 
 The format is as follows:
 
@@ -92,7 +92,7 @@ This is a real-world example:
 }
 ```
 
-The following are command templates for common operations in Sqlite3.
+The following are command templates for common operations. (syntax seen here is for Sqlite3)
 
 **Add column**
 
@@ -110,6 +110,8 @@ The following are command templates for common operations in Sqlite3.
 
 ## Future development 
 
-* support database engines other than sqlite
+* support databases other than sqlite
 * some better installation (node-wrapper script in /usr/local/bin)
 * better input validation
+* maybe some non-action reporting/status commands
+* -h for help
