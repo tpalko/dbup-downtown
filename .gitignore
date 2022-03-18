@@ -105,5 +105,3 @@ dist
 
 *.code-workspace
 test.db
-migrate.js
-Database.js
