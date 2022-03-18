@@ -13,13 +13,8 @@ Provided your project has a `migrations` folder with at least one migration file
 
 ```
 npm install
-MIGRATIONS_FOLDER=../relative/path/to/migrations/folder/in/your/project PATH_TO_DB=../relative/path/to/sqlite/database/file node migrate.js migrate 
-```
-
-If `migrate.js` doesn't exist:
-
-```
-node_modules/typescript/bin/./tsc *.ts
+npm run build
+MIGRATIONS_FOLDER=../relative/path/to/migrations/folder/in/your/project PATH_TO_DB=../relative/path/to/sqlite/database/file npm start migrate
 ```
 
 ## Impact to your project 
@@ -41,9 +36,13 @@ will consume these files, ignoring any without a `.json` file extension.
 
 A path to the (for now, only) Sqlite database file. 
 
-## Options 
+## Usage
 
-To perform migrations, the first token after `migrate.js` is always `migrate`.
+```
+node migrate.js <migrate|fake [up|down|NUM] [NUM] | list | new [description]>
+```
+
+To perform migrations or fakes, the first token after `npm start` or `node migrate.js` is either `migrate` or `fake`.
 
 If no other tokens, the assumption is `migrate up by one`.
 
@@ -67,6 +66,13 @@ made about direction from the previous token remain in effect.
 | `migrate down -1` | migrate down by one |
 | `migrate 1 -1` | nonsensical, but will attempt migrate "up" by "minus one" |
 | `migrate 1 down` | error (parsing non-numerical string as integer) |
+
+Similarly, `fake` will accept the same positional arguments.
+
+`list` will show all migration files found and their status with respect to history found in the `migrations` folder.
+
+`new` will create a blank migration in the `migrations` folder with an appropriate UTC timestamp name.
+
 
 ## Migration files
 
