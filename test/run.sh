@@ -1,6 +1,6 @@
 #!/bin/bash 
 
-export PATH_TO_DB=test/data/data.db 
+export PATH_TO_DB=test/data/test.db
 export MIGRATIONS_FOLDER=test/migrations 
 
 node ./migrate.js migrate
@@ -19,4 +19,4 @@ echo "All five migrations should be applied."
 echo -n "<enter> to reset "
 read 
 
-rm -fv test/data/data.db 
+rm -fv test/data/test.db
