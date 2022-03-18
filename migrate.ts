@@ -5,6 +5,7 @@ const MIGRATIONS_FOLDER = process.env.MIGRATIONS_FOLDER || './migrations';
 
 class Migration {
   name: string;
+  description: string;
   up: string;
   down: string;
   executed: boolean;
@@ -25,56 +26,104 @@ var getMigration = (file) => {
       } else {
         const inTable = row !== undefined;
         const migrationFile = `${MIGRATIONS_FOLDER}/${file}`;
-        fs.readFile(migrationFile, (readErr, data) => {
-          const migration = JSON.parse(data);
-          resolve({ name: migrationName, up: migration.up, down: migration.down, executed: inTable });
+        // console.log('Opening ' + migrationFile);
+        fs.readFile(migrationFile, 'utf-8', (readErr, data) => {
+          if (!data) {
+            resolve(null);
+          } else {
+            // console.log('Parsing data..');
+            // console.log(data);
+            const migration = JSON.parse(data);
+            resolve({ 
+              name: migrationName, 
+              description: migration.name, 
+              up: migration.up, 
+              down: migration.down, 
+              executed: inTable 
+            });  
+          }          
         });          
       }
     });       
   });  
 }
 
-function applyAndLogMigration(migration: Migration, direction: string) {
-  const notDirection = direction === 'up' ? 'down' : 'up';
+function executeMigration(statement, action) {
   return new Promise((resolve, reject) => {
-    console.log(` --> ${migration[direction]}`)
-    db.exec(migration[direction], (dbRunErr) => {
-      if (dbRunErr){
-        console.error(`An error occurred running ${migration.name} ${direction}`);
-        console.error(dbRunErr);
-        reject(dbRunErr);
+    console.log(` --> ${statement}`)
+    if (action == "fake") {
+      resolve(true);
+    } else {
+      db.exec(statement, (dbRunErr) => {
+        if (dbRunErr) {
+          reject(dbRunErr);
+        } else {
+          resolve(true);
+        }
+      });  
+    }    
+  });
+}
+
+function logMigration(name, direction) {
+  return new Promise((resolve, reject) => {
+    const logSql = direction === 'up' ? 'INSERT INTO migrations (name) values($name)' : 'DELETE FROM migrations where name = $name';
+    console.log(` --> ${logSql} (${name})`);
+    db.run(logSql, { $name: name }, (dbLogErr) => {
+      if (dbLogErr) {
+        reject(dbLogErr);
       } else {
-        console.log(`Migration ${migration.name} applied!`);
-        const logSql = direction === 'up' ? 'INSERT INTO migrations (name) values($name)' : 'DELETE FROM migrations where name = $name';
-        console.log(` --> ${logSql} (${migration.name})`);
-        db.run(logSql, { $name: migration.name }, (dbLogErr) => {
-          if (dbLogErr) {
-            console.error(`An error occurred logging ${migration.name}`);
-            console.error(dbLogErr);
-            db.exec(migration[notDirection], (dbRollbackErr) => {
-              if (dbRollbackErr) {
-                console.error(`An error occurred running ${migration.name} ${notDirection}`);
-                console.error(dbRollbackErr);
-              } else {
-                console.log(`Migration ${migration.name} rolled back!`);
-              }
-              reject(dbRollbackErr || dbLogErr);
-            });
-          } else {
-            console.log(`Migration ${migration.name} accounted`);
-            resolve(migration);
-          }
-        });
+        resolve(true);
       }
-    })  
+    });
+  })  
+}
+
+function applyAndLogMigration(migration: Migration, action: string, direction: string) {
+  
+  return new Promise((resolve, reject) => {
+    
+    executeMigration(migration[direction], action)
+      .then(() => {
+    
+        console.log(`Migration ${migration.name} applied!`);
+        
+        logMigration(migration.name, direction)
+        .then(() => {
+          console.log(`Migration ${migration.name} accounted`);
+          resolve(migration);
+        })
+        .catch((err) => {
+          console.error(`An error occurred logging ${migration.name}`);
+          console.error(err.message);
+          console.error(`Attempting to rollback..`)
+          const rollbackDirection = direction === 'up' ? 'down' : 'up';
+          
+          executeMigration(migration[rollbackDirection], action)
+          .then(() => {
+            console.log(`Migration ${migration.name} rolled back!`);
+            reject(err);
+          })
+          .catch((dbRollbackErr) => {
+            console.error(`An error occurred running ${migration.name} ${rollbackDirection}`);
+            console.error(dbRollbackErr.message);
+            reject(dbRollbackErr);
+          })
+        })
+      })
+      .catch((err) => {
+        console.error(`An error occurred running ${migration.name} ${direction}`);
+        console.error(err.message);
+        reject(err);
+      });
   })
 }
 
-function applyAndLogMigrations(migrations, direction, count) {
+function applyAndLogMigrations(migrations, action, direction, count) {
   if (count > 0 && migrations.length > 0) {
-    applyAndLogMigration(migrations[0], direction)
+    applyAndLogMigration(migrations[0], action, direction)
       .then((migration) => {
-        applyAndLogMigrations(migrations.slice(1), direction, --count);
+        applyAndLogMigrations(migrations.slice(1), action, direction, --count);
       })
       .catch((err) => {
         console.error(err);
@@ -85,89 +134,178 @@ function applyAndLogMigrations(migrations, direction, count) {
 }
 
 function sortMigrations(migrations, direction){
-  const migrationQueue = {};
+  const migrationsByName = {};
   migrations.forEach((migration: Migration) => {
-    migrationQueue[migration.name] = { ...migration };
+    migrationsByName[migration.name] = { ...migration };
   });
-  const migrationQueueKeys = Object.keys(migrationQueue);
+  const migrationQueueKeys = Object.keys(migrationsByName);
   if (direction === 'up') {
     migrationQueueKeys.sort();
   } else {
     migrationQueueKeys.reverse();
   }
-  return migrationQueueKeys.map(migrationName => { return migrationQueue[migrationName]; });
+  return migrationQueueKeys.map(migrationName => { return migrationsByName[migrationName]; });
 }
 
-function migrate(direction, count) {
-  fs.readdir(MIGRATIONS_FOLDER, (err, files) => {  
-    if (err) {
-      throw err;
-    }        
-    console.log(`Reading ${MIGRATIONS_FOLDER}, found ${files.length} files`);
-    Promise.all(files.map(getMigration))
-      .then((migrations) => {
-        console.log(`Have ${migrations.length} migrations`);
-        const filteredMigrations = migrations.filter((migration: Migration) => migration && ((direction === 'up' && ! migration.executed) || (direction === 'down' && migration.executed)));
-        console.log(`Found ${filteredMigrations.length} applicable migrations`);
-        return filteredMigrations;
+function getAllMigrations() {
+  return new Promise<Migration[]>((resolve, reject) => {
+    fs.readdir(MIGRATIONS_FOLDER, (err, files) => {  
+      if (err) {
+        throw err;
+      }        
+      console.log(`Reading ${MIGRATIONS_FOLDER}, found ${files.length} files`);
+      Promise.all<Migration>(files.map(getMigration))
+      .then((migrations: Migration[]) => {
+        console.log("\n\n");
+        resolve(migrations);
       })
-      .then((filteredMigrations) => {
-        return sortMigrations(filteredMigrations, direction);
-      })
-      .then((sortedMigrations) => {
-        applyAndLogMigrations(sortedMigrations, direction, count);
-      })
-      .catch((something) => {
-        console.error(something);
-      });  
+    });
+  })  
+}
+
+function migrate(action, direction, count) {
+  getAllMigrations()
+  .then((migrations: Array<Migration>) => {
+    console.log(`Have ${migrations.length} migrations`);
+    const filteredMigrations = migrations.filter((migration: Migration) => {
+      return migration && ((direction === 'up' && ! migration.executed) || (direction === 'down' && migration.executed))
+    });
+    console.log(`Found ${filteredMigrations.length} applicable migrations`);
+    return filteredMigrations;
+  }).then((filteredMigrations) => {
+    return sortMigrations(filteredMigrations, direction);
+  })
+  .then((sortedMigrations) => {
+    applyAndLogMigrations(sortedMigrations, action, direction, count);
+  })
+  .catch((something) => {
+    console.error(something);
+  });  ;
+  
+  // fs.readdir(MIGRATIONS_FOLDER, (err, files) => {  
+  //   if (err) {
+  //     throw err;
+  //   }        
+  //   console.log(`Reading ${MIGRATIONS_FOLDER}, found ${files.length} files`);
+  //   Promise.all(files.map(getMigration))
+  //     .then((migrations) => {
+  // 
+  //     })
+  //     .then((filteredMigrations) => {
+  //       return sortMigrations(filteredMigrations, direction);
+  //     })
+  //     .then((sortedMigrations) => {
+  //       applyAndLogMigrations(sortedMigrations, action, direction, count);
+  //     })
+  //     .catch((something) => {
+  //       console.error(something);
+  //     });  
+  // });
+}
+
+function list() {
+  getAllMigrations()
+  .then((migrations: Migration[]) => {
+
+    if(migrations.length > 0) {
+      var youAreHered = false;
+      migrations.forEach((migration) => {
+        if (!migration.executed && !youAreHered) {
+          console.log(` --- you are here --- `);
+          youAreHered = true;
+        }
+        console.log(`${migration.name} : ${migration.executed ? "applied" : "       "}: ${migration.description} : ${migration.up}`)
+      });
+      if (!youAreHered) {
+        console.log(` --- you are here --- `);
+      }
+      console.log("\n\n")
+    }
+    
   });
 }
 
-function run(direction, count) {
-  
-  console.log(`Migrating ${count} ${direction}`);
-  db.get('SELECT 1 from migrations', (err, row) => {
-    let tableCheck;
+function create(name, description) {
+  console.log(`Creating ${description} as ${name}`);
+  const emptyMigration = {
+    name: description,
+    up: "",
+    down: ""
+  };
+  fs.writeFile(`${MIGRATIONS_FOLDER}/${name}.json`, JSON.stringify(emptyMigration), { encoding: 'utf-8'}, (err, bytes) => {
     if (err) {
-      console.error(err);
-      tableCheck = new Promise(resolve => {
+      console.error(err.message);
+    }
+  })
+}
+
+function tableCheck() {
+  return new Promise((resolve, reject) => {
+    db.get('SELECT 1 from migrations', (err, row) => {
+      if (err) {
         console.log('Creating migrations table');
         db.run('CREATE TABLE migrations (name TEXT, executed_at DATE)', (err) => {
+          if (err) {
+            reject(err);
+          }
           resolve(true);
         });        
-      });
-    } else {
-      tableCheck = new Promise(resolve => resolve(true));
-    }  
-    tableCheck.then(() => {      
-      migrate(direction, count);        
-    })    
-  });
+      } else {
+        resolve(true);
+      }
+    });
+  })
 }
 
-if (process.argv.length > 1) {
-  const op = process.argv[2];
+function print_help() {
+  print()
+}
 
-  switch(op) {
-    case 'help':
-      console.log("Help is on the way (not really)");
-      break;
-    case 'test':
-      console.log('Do you smell smoke?')
-      break;
-    case 'migrate':
-      let count = 1;
-      let direction = 'up';    
-      if (process.argv.length > 3) {
-        const migrateVector = process.argv[3];
-        const parsedVector = parseInt(migrateVector);
-        count = parsedVector || 1;
-        direction = parsedVector ? (parsedVector > 0 ? 'up' : 'down') : migrateVector;
-      }
-      if (process.argv.length > 4) {
-        count = parseInt(process.argv[4]);
-      }
-      run(direction, count);
-      break;
+if (process.argv.length > 2) {
+  
+  const action = process.argv[2];
+  console.log(`Processing ${action}`)
+  
+  const migrateActions = ["migrate", "fake"];
+  
+  if (action == "list") {
+      list();
+  } else if (action == "new") {
+    const migrationDate = new Date();
+    var month = migrationDate.getUTCMonth() + 1;
+    month = month < 10 ? month + 10 : month;
+    const migrationName = `${migrationDate.getUTCFullYear()}${month}${migrationDate.getUTCDate()}${migrationDate.getUTCHours()}${migrationDate.getUTCMinutes()}`;
+    var migrationDescription = migrationName;
+    if (process.argv.length > 3) {
+      migrationDescription = process.argv[3];
+    }
+    create(migrationName, migrationDescription);
+  } else if (action == "migrate" || action == "fake") {
+    
+    let count = 1;
+    let direction = 'up';    
+    
+    if (process.argv.length > 3) {
+      const migrateVector = process.argv[3];
+      // this argument could be direction or count 
+      const parsedVector = parseInt(migrateVector);
+      // count is set if it parses as int or 1 if not 
+      count = parsedVector || 1;
+      // direction is set by count positivity if this was in fact count
+      // or this was direction 
+      direction = parsedVector ? (parsedVector > 0 ? 'up' : 'down') : migrateVector;
+    }
+    
+    if (process.argv.length > 4) {
+      // oh, ok. that was direction.. this is count.
+      count = parseInt(process.argv[4]);
+    }
+    
+    console.log(`Migrating ${action == "fake" ? "(fake)" : ""} ${count} ${direction}`);
+    tableCheck().then(() => {
+      migrate(action, direction, count);
+    }).catch((err) => {
+      console.error(err.message);
+    })
   }  
 }

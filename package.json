@@ -1,10 +1,12 @@
 {
   "name": "dbup-downtown",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "Lightweight database migration command-line tool",
   "main": "migrate.js",
   "scripts": {
-    "test": "node migrate.js test"
+    "build": "node_modules/typescript/bin/./tsc *.ts",
+    "test": "npm run build && test/./run.sh",
+    "start": "node migrate.js $@"
   },
   "repository": {
     "type": "git",

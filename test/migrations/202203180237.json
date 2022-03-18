@@ -1,0 +1,5 @@
+{
+	"name": "add column phylum to animals",
+	"up": "alter table animals add column phylum varchar(255)",
+	"down": "begin transaction; create table animals_temp as select id from animals; drop table animals; alter table animals_temp rename to animals; end transaction;"
+}

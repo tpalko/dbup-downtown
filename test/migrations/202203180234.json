@@ -1,0 +1,5 @@
+{
+	"name": "creating table animals",
+	"up": "create table animals (id int)",
+	"down": "drop table animals"
+}
