@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.7](https://github.com/tpalko/dbup-downtown/compare/v0.0.6...v0.0.7) (2022-03-19)
+
+
+### Bug Fixes
+
+* build script tsc path ([be7431a](https://github.com/tpalko/dbup-downtown/commit/be7431a5d764f536b10a65654a25a3abcd4dc7bf))
+
 ### [0.0.6](https://github.com/tpalko/dbup-downtown/compare/v0.0.5...v0.0.6) (2022-03-19)
 
 ### [0.0.5](https://github.com/tpalko/dbup-downtown/compare/v0.0.4...v0.0.5) (2022-03-18)
