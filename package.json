@@ -1,6 +1,6 @@
 {
   "name": "dbup-downtown",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "description": "Lightweight database migration command-line tool",
   "main": "migrate.js",
   "scripts": {
