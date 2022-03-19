@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.9](https://github.com/tpalko/dbup-downtown/compare/v0.0.8...v0.0.9) (2022-03-19)
+
+
+### Bug Fixes
+
+* types/node 16.7.1 -> 16.11.26, added hasInstallScript true ([f228b19](https://github.com/tpalko/dbup-downtown/commit/f228b19b076911f0e016ca7db0584c2de68e2d48))
+
 ### [0.0.8](https://github.com/tpalko/dbup-downtown/compare/v0.0.7...v0.0.8) (2022-03-19)
 
 ### [0.0.7](https://github.com/tpalko/dbup-downtown/compare/v0.0.6...v0.0.7) (2022-03-19)
