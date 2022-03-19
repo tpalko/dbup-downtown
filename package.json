@@ -6,7 +6,8 @@
   "scripts": {
     "build": "node_modules/typescript/bin/./tsc *.ts",
     "test": "npm run build && test/./run.sh",
-    "start": "node migrate.js $@"
+    "start": "node migrate.js $@",
+    "install": "npm run build && ln -svf ../lib/node-modules/dbup-downtown/bin/dbdt.js ~/.npm-global/bin/dbdt"
   },
   "repository": {
     "type": "git",
