@@ -4,7 +4,7 @@
   "description": "Lightweight database migration command-line tool",
   "main": "migrate.js",
   "scripts": {
-    "build": "node_modules/typescript/bin/./tsc *.ts",
+    "build": "tsc *.ts",
     "test": "npm run build && test/./run.sh",
     "start": "node migrate.js $@",
     "install": "npm run build && ln -svf ../lib/node-modules/dbup-downtown/bin/dbdt.js ~/.npm-global/bin/dbdt"
