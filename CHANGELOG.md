@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.11](https://github.com/tpalko/dbup-downtown/compare/v0.0.10...v0.0.11) (2022-03-19)
+
+
+### Bug Fixes
+
+* removed npm run build from install script. removed print() ([8465f17](https://github.com/tpalko/dbup-downtown/commit/8465f17e55bb4d7d03cfafbdf9fc8c8d46644e27))
+
 ### [0.0.10](https://github.com/tpalko/dbup-downtown/compare/v0.0.9...v0.0.10) (2022-03-19)
 
 ### [0.0.9](https://github.com/tpalko/dbup-downtown/compare/v0.0.8...v0.0.9) (2022-03-19)
