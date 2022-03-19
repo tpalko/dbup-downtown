@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.13](https://github.com/tpalko/dbup-downtown/compare/v0.0.12...v0.0.13) (2022-03-19)
+
+
+### Bug Fixes
+
+* padded date, hours and minutes for new migration ([c889e74](https://github.com/tpalko/dbup-downtown/commit/c889e740483cda739613c97b1c69a01faa805a71))
+
 ### [0.0.12](https://github.com/tpalko/dbup-downtown/compare/v0.0.11...v0.0.12) (2022-03-19)
 
 ### [0.0.11](https://github.com/tpalko/dbup-downtown/compare/v0.0.10...v0.0.11) (2022-03-19)
