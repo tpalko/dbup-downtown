@@ -7,7 +7,7 @@
     "build": "tsc *.ts",
     "test": "npm run build && test/./run.sh",
     "start": "node migrate.js $@",
-    "install": "npm run build && ln -svf ../lib/node_modules/dbup-downtown/bin/dbdt.js ~/.npm-global/bin/dbdt"
+    "install": "ln -svf ../lib/node_modules/dbup-downtown/bin/dbdt.js ~/.npm-global/bin/dbdt"
   },
   "repository": {
     "type": "git",

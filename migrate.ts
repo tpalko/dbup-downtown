@@ -258,7 +258,7 @@ function tableCheck() {
 }
 
 function print_help() {
-  print()
+  console.log('help not implemented');
 }
 
 if (process.argv.length > 2) {
