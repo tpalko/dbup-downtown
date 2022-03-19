@@ -250,6 +250,9 @@ function tableCheck() {
 function print_help() {
     console.log('help not implemented');
 }
+function padToTwoDigits(val) {
+    return val < 10 ? "0" + val : val;
+}
 if (process.argv.length > 2) {
     var action_1 = process.argv[2];
     console.log("Processing " + action_1);
@@ -260,8 +263,14 @@ if (process.argv.length > 2) {
     else if (action_1 == "new") {
         var migrationDate = new Date();
         var month = migrationDate.getUTCMonth() + 1;
-        month = month < 10 ? month + 10 : month;
-        var migrationName = "" + migrationDate.getUTCFullYear() + month + migrationDate.getUTCDate() + migrationDate.getUTCHours() + migrationDate.getUTCMinutes();
+        var date = migrationDate.getUTCDate();
+        var hours = migrationDate.getUTCHours();
+        var minutes = migrationDate.getUTCMinutes();
+        var paddedMonth = padToTwoDigits(month);
+        var paddedDate = padToTwoDigits(date);
+        var paddedHours = padToTwoDigits(hours);
+        var paddedMinutes = padToTwoDigits(minutes);
+        var migrationName = "" + migrationDate.getUTCFullYear() + paddedMonth + paddedDate + paddedHours + paddedMinutes;
         var migrationDescription = migrationName;
         if (process.argv.length > 3) {
             migrationDescription = process.argv[3];
